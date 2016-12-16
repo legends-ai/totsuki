@@ -6,8 +6,13 @@ scalaVersion in ThisBuild := "2.11.8"
 
 libraryDependencies ++= Seq(
   // Spark stuff
-  "org.apache.spark" %% "spark-core" % "2.0.0" % "provided",
-  "org.apache.spark" %% "spark-sql" % "2.0.0" % "provided",
+  "org.apache.spark" %% "spark-core" % "2.0.2" % "provided",
+  "org.apache.spark" %% "spark-sql" % "2.0.2" % "provided",
+  "org.apache.spark" %% "spark-streaming" % "2.0.2" % "provided",
+  "org.apache.spark" %% "spark-streaming-kafka-0-10" % "2.0.2" % "provided",
+
+  // Asuna standard lib
+  "io.asuna" %% "asunasan" % "0.3.5",
 
   // Scalatest
   "org.scalactic" %% "scalactic" % "3.0.0" % "test",
