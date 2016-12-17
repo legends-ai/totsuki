@@ -8,7 +8,7 @@ Etymology: We "cook" raw matches into Parquet files and prepare them for ETL job
 
 This is a really simple Spark streaming application that does the following:
 
-1. Subscribe to match Kafka topic, e.g. `bacchus:match:na`
+1. Subscribe to match Kafka topic, e.g. `bacchus.match.na`
 2. Parse matches from Kafka topic (inefficient, TODO optimize)
 3. Extract version from the message
 4. Split stream into one RDD per unique version

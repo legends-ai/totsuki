@@ -16,7 +16,7 @@ object Main {
     val region = args(0)
 
     // The topic, which is just our region.
-    val topic = s"bacchus:matches:${region}"
+    val topic = s"bacchus.matches.${region}"
 
     println(s"Initializing Totsuki on topic ${topic}")
 
