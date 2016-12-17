@@ -59,11 +59,11 @@ object Main {
         val serialized = parsed.filter(_.version == version).map(_.toByteArray)
 
         // Store in the "data" column of the Parquet
-        val df = serialized.toDF("data")
+        val ds = serialized.toDS()
 
         // Write out to s3
         val outFile = s"s3n://bacchus-out/${region}/${version}/${time.milliseconds}.parquet"
-        df.write.parquet(outFile)
+        ds.write.parquet(outFile)
       }
     }
   }
