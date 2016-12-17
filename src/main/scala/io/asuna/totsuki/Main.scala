@@ -55,7 +55,13 @@ object Main {
 
       // Now, we'll create a dataframe for each version and write it out.
       versions.foreach { version =>
-        val df = parsed.filter(_.version == version).toDF()
+        // Serialize back to byte array
+        val serialized = parsed.filter(_.version == version).map(_.toByteArray)
+
+        // Store in the "data" column of the Parquet
+        val df = serialized.toDF("data")
+
+        // Write out to s3
         val outFile = s"s3n://bacchus-out/${region}/${version}/${time.milliseconds}.parquet"
         df.write.parquet(outFile)
       }
