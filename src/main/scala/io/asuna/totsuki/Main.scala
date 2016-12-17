@@ -58,7 +58,6 @@ object Main {
         // Serialize back to byte array
         val serialized = parsed.filter(_.version == version).map(_.toByteArray)
 
-        // Store in the "data" column of the Parquet
         val ds = serialized.toDS()
 
         // Write out to s3
