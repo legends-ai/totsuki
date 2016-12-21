@@ -1,11 +1,17 @@
 package io.asuna.totsuki
 
-import io.asuna.proto.charon.CharonData.Match
+import cats.implicits._
+import cats.Apply
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.ObjectMetadata
+import io.asuna.proto.bacchus.BacchusData.RawMatch
+import java.io.{ PipedInputStream, PipedOutputStream }
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.spark._
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.kafka010.{ ConsumerStrategies, KafkaUtils, LocationStrategies }
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.util.{ Success, Try }
 
 object Main {
@@ -36,9 +42,6 @@ object Main {
       ConsumerStrategies.Subscribe[Array[Byte], Array[Byte]](Set(topic), kafkaParams)
     )
 
-    val sql = SparkSession.builder().config(conf).getOrCreate()
-    import sql.implicits._
-
     stream.foreachRDD { (rdd, time) =>
       // First, let's get the byte array.
       val byteRDD = rdd.map(_.value())
@@ -46,25 +49,46 @@ object Main {
       // Next, let's parse all the matches.
       // TODO(igm): figure out if there's a way for us to not have to parse the entire message.
       // Possibly a nested message? need to benchmark.
-      val tryParsed = byteRDD.map(bytes => Try { Match.parseFrom(bytes) })
+      val tryParsed = byteRDD.map(bytes => Try { RawMatch.parseFrom(bytes) })
       val parsed = tryParsed.collect { case Success(x) => x }
 
       // We'll split the RDD up now by version.
+      // TODO(pradyuman): change patch to version in BacchusData.RawMatch
       // First, let's collect a list of all distinct versions.
-      val versions = parsed.map(_.version).distinct.collect
+      val versions = parsed.map(_.patch).distinct.collect
 
       // Now, we'll create a dataframe for each version and write it out.
       versions.foreach { version =>
-        // Serialize back to byte array
-        val serialized = parsed.filter(_.version == version).map(_.toByteArray)
-
-        val ds = serialized.toDS()
-
-        // Write out to s3
-        val outFile = s"s3n://bacchus-out/${region}/${version}/${time.milliseconds}.parquet"
-        ds.write.parquet(outFile)
+        val matches = parsed.filter(_.patch == version).collect
+        implicit val ec = ExecutionContext.global
+        writeMatches(region, version, time.milliseconds, matches)
       }
     }
+  }
+
+  def writeMatches(region: String, version: String, millis: Long, matches: Array[RawMatch])(implicit ec: ExecutionContext): Unit = {
+    val is = new PipedInputStream()
+    val os = new PipedOutputStream(is)
+
+    // Here we write
+
+    val s3 = new AmazonS3Client()
+
+    // Here we read the matches and write it to the output stream.
+    val writeFut = Future {
+      matches.foreach { rawMatch =>
+        rawMatch.writeDelimitedTo(os)
+      }
+    }
+
+    // Here we read the input stream and write it to S3.
+    val readFut = Future {
+      s3.putObject("bacchus-out",
+                   s"${region}/${version}/${millis}.protolist", is, new ObjectMetadata())
+    }
+
+    // Now we read and write concurrently
+    Await.result(Apply[Future].tuple2(writeFut, readFut), Duration.Inf)
   }
 
 }
