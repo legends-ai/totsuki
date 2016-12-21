@@ -64,6 +64,9 @@ object Main {
         writeMatches(region, version, time.milliseconds, matches)
       }
     }
+
+    ssc.start()
+    ssc.awaitTermination()
   }
 
   def writeMatches(region: String, version: String, millis: Long, matches: Array[RawMatch])(implicit ec: ExecutionContext): Unit = {
