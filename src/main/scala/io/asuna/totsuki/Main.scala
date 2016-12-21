@@ -89,6 +89,10 @@ object Main {
 
     // Now we read and write concurrently
     Await.result(Apply[Future].tuple2(writeFut, readFut), Duration.Inf)
+
+    // Close streams when we are done
+    is.close()
+    os.close()
   }
 
 }
