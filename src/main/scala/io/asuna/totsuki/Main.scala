@@ -53,13 +53,12 @@ object Main {
       val parsed = tryParsed.collect { case Success(x) => x }
 
       // We'll split the RDD up now by version.
-      // TODO(pradyuman): change patch to version in BacchusData.RawMatch
       // First, let's collect a list of all distinct versions.
-      val versions = parsed.map(_.patch).distinct.collect
+      val versions = parsed.map(_.version).distinct.collect
 
       // Now, we'll create a dataframe for each version and write it out.
       versions.foreach { version =>
-        val matches = parsed.filter(_.patch == version).collect
+        val matches = parsed.filter(_.version == version).collect
         implicit val ec = ExecutionContext.global
         writeMatches(region, version, time.milliseconds, matches)
       }
