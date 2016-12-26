@@ -2,10 +2,9 @@ package io.asuna.totsuki
 
 import cats.implicits._
 import cats.Apply
-import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.transfer.{ TransferManager, Upload }
 import io.asuna.proto.bacchus.BacchusData.RawMatch
-import java.io.{ PipedInputStream, PipedOutputStream }
+import java.io.{ File, FileOutputStream }
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.spark._
 import org.apache.spark.streaming._
@@ -45,6 +44,9 @@ object Main {
       ConsumerStrategies.Subscribe[Array[Byte], Array[Byte]](Set(topic), kafkaParams)
     )
 
+    // S3 Transfer Manager
+    implicit val tx = new TransferManager()
+
     stream.foreachRDD { (rdd, time) =>
       // First, let's get the byte array.
       val byteRDD = rdd.map(_.value())
@@ -69,35 +71,26 @@ object Main {
 
     ssc.start()
     ssc.awaitTermination()
+    tx.shutdownNow()
   }
 
-  def writeMatches(region: String, version: String, millis: Long, matches: Array[RawMatch])(implicit ec: ExecutionContext): Unit = {
-    val is = new PipedInputStream()
-    val os = new PipedOutputStream(is)
+  def writeMatches(region: String, version: String, millis: Long, matches: Array[RawMatch])(implicit ec: ExecutionContext, tx: TransferManager): Unit = {
+    val file = File.createTempFile("totsuki", ".tmp")
+    val fs = new FileOutputStream(file)
 
-    // Here we write
-
-    val s3 = new AmazonS3Client()
-
-    // Here we read the matches and write it to the output stream.
-    val writeFut = Future {
-      matches.foreach { rawMatch =>
-        rawMatch.writeDelimitedTo(os)
-      }
+    // Here we write the matches to the tempfile.
+    matches.foreach { rawMatch =>
+      rawMatch.writeDelimitedTo(fs)
     }
+    fs.close()
 
-    // Here we read the input stream and write it to S3.
-    val readFut = Future {
-      s3.putObject("league-matches",
-                   s"${region}/${version}/${millis}.protolist", is, new ObjectMetadata())
-    }
+    // Here we upload the temp file to S3.
+    // TransferManager will automatically make this multipart if it will improve performance.
+    tx.upload("totsuki-fragments",
+              s"${region}/${version}/${millis}.protolist", file).waitForCompletion()
 
-    // Now we read and write concurrently
-    Await.result(Apply[Future].tuple2(writeFut, readFut), Duration.Inf)
-
-    // Close streams when we are done
-    is.close()
-    os.close()
+    // Noew we delete the tempfile since the S3 upload is complete
+    file.delete()
   }
 
 }
