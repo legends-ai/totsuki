@@ -40,6 +40,11 @@ resolvers ++= Seq[Resolver](
   s3resolver.value("Aincrad", s3("aincrad.asuna.io"))
 )
 
+// Spark Submit
+sparkSubmitJar := assembly.value.getAbsolutePath
+lazy val root = (project in file("."))
+  .settings(SparkSubmit.settings: _*)
+
 // testing
 testOptions in Test += Tests.Argument("-oDF")
 

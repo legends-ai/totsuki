@@ -31,7 +31,7 @@ object Main {
 
     // hostname:port for Kafka brokers, not Zookeeper
     val kafkaParams = Map(
-      "metadata.broker.list" -> "localhost:9092",
+      "bootstrap.servers" -> args(1),
       "key.deserializer" -> classOf[ByteArrayDeserializer],
       "value.deserializer" -> classOf[ByteArrayDeserializer]
     )
