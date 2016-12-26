@@ -32,8 +32,11 @@ object Main {
     // hostname:port for Kafka brokers, not Zookeeper
     val kafkaParams = Map(
       "bootstrap.servers" -> args(1),
+      "group.id" -> args(0),
       "key.deserializer" -> classOf[ByteArrayDeserializer],
-      "value.deserializer" -> classOf[ByteArrayDeserializer]
+      "value.deserializer" -> classOf[ByteArrayDeserializer],
+      "auto.offset.reset" -> "latest",
+      "enable.auto.commit" -> (false: java.lang.Boolean)
     )
 
     val stream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte]](
@@ -85,7 +88,7 @@ object Main {
 
     // Here we read the input stream and write it to S3.
     val readFut = Future {
-      s3.putObject("bacchus-out",
+      s3.putObject("league-matches",
                    s"${region}/${version}/${millis}.protolist", is, new ObjectMetadata())
     }
 

@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   // Spark stuff
   "org.apache.spark" %% "spark-core" % "2.0.2" % "provided",
   "org.apache.spark" %% "spark-streaming" % "2.0.2" % "provided",
-  "org.apache.spark" %% "spark-streaming-kafka-0-10" % "2.0.2" % "provided",
+  "org.apache.spark" %% "spark-streaming-kafka-0-10" % "2.0.2",
 
   // Asuna standard lib
   "io.asuna" %% "asunasan" % "0.7.3",
@@ -23,6 +23,9 @@ mainClass in assembly := Some("io.asuna.totsuki.Main")
 
 assemblyMergeStrategy in assembly := {
   case x if x.endsWith("io.netty.versions.properties") => MergeStrategy.first
+  case x if x contains "log4j" => MergeStrategy.first
+  case x if x contains "slf4j" => MergeStrategy.first
+  case x if x contains "spark" => MergeStrategy.first
   case x if x contains "publicsuffix" => MergeStrategy.first
   case x =>
     val oldStrategy = (assemblyMergeStrategy in assembly).value
@@ -39,11 +42,6 @@ resolvers ++= Seq[Resolver](
   Resolver.bintrayRepo("websudos", "oss-releases"),
   s3resolver.value("Aincrad", s3("aincrad.asuna.io"))
 )
-
-// Spark Submit
-sparkSubmitJar := assembly.value.getAbsolutePath
-lazy val root = (project in file("."))
-  .settings(SparkSubmit.settings: _*)
 
 // testing
 testOptions in Test += Tests.Argument("-oDF")
