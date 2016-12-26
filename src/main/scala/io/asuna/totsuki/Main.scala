@@ -26,7 +26,7 @@ object Main {
 
     println(s"Initializing Totsuki on topic ${topic}")
 
-    // Write parquet every 60 seconds. TODO(igm): make this configurable
+    // Write every 60 seconds. TODO(igm): make this configurable
     val ssc = new StreamingContext(conf, Seconds(60))
 
     // hostname:port for Kafka brokers, not Zookeeper
