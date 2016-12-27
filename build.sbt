@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-kafka-0-10" % "2.0.2",
 
   // Asuna standard lib
-  "io.asuna" %% "asunasan" % "0.7.3",
+  "io.asuna" %% "asunasan" % "0.7.4",
 
   // Scalatest
   "org.scalactic" %% "scalactic" % "3.0.0" % "test",
@@ -65,8 +65,7 @@ dockerfile in docker := {
     from("gettyimages/spark:2.0.2-hadoop-2.7")
     add(artifact, artifactTargetPath)
     entryPoint("spark-submit",
-               "--conf", "spark.cassandra.connection.host=127.0.0.1",
-               "--class", "ai.legends.athena.Main",
+               "--class", "ai.legends.totsuki.Main",
                "--master", "local[4]", artifactTargetPath)
   }
 }
