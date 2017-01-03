@@ -89,7 +89,7 @@ object Main {
     tx.upload("totsuki-fragments",
               s"${region}/${version}/${millis}.protolist", file).waitForCompletion()
 
-    // Noew we delete the tempfile since the S3 upload is complete
+    // Now we delete the tempfile since the S3 upload is complete
     file.delete()
   }
 
