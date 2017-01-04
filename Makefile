@@ -4,7 +4,7 @@ build:
 local-run:
 	spark-submit \
 			--class io.asuna.totsuki.Main \
-			target/scala-2.11/totsuki-assembly.jar NA localhost:9092
+			target/scala-2.11/totsuki-assembly.jar
 
 deploy:
 	sbt publish

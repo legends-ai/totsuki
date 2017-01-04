@@ -76,3 +76,10 @@ imageNames in docker := Seq(
   ImageName(s"${base}/${name.value}:latest"),
   ImageName(s"${base}/${name.value}:${version.value}")
 )
+
+lazy val root = (project in file(".")).
+  enablePlugins(BuildInfoPlugin).
+  settings(
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoPackage := "buildinfo"
+  )

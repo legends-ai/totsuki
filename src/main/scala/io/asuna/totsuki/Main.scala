@@ -16,9 +16,10 @@ import scala.util.{ Success, Try }
 object Main {
 
   def main(args: Array[String]): Unit = {
+    val cfg = Config.mustParse(args)
     val conf = new SparkConf().setAppName("totsuki")
 
-    val region = args(0)
+    val region = cfg.region
 
     // The topic, which is just our region.
     val topic = s"bacchus.matches.${region}"
@@ -30,8 +31,8 @@ object Main {
 
     // hostname:port for Kafka brokers, not Zookeeper
     val kafkaParams = Map(
-      "bootstrap.servers" -> args(1),
-      "group.id" -> args(0),
+      "bootstrap.servers" -> cfg.bootstrapServers,
+      "group.id" -> cfg.region,
       "key.deserializer" -> classOf[ByteArrayDeserializer],
       "value.deserializer" -> classOf[ByteArrayDeserializer],
       "auto.offset.reset" -> "latest",
