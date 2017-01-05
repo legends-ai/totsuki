@@ -66,7 +66,7 @@ object Main {
       versions.foreach { version =>
         val matches = parsed.filter(_.version == version).collect
         implicit val ec = ExecutionContext.global
-        writeMatches(region, version, time.milliseconds, matches)
+        writeMatches(cfg.bucket, region, version, time.milliseconds, matches)
       }
     }
 
@@ -75,7 +75,9 @@ object Main {
     tx.shutdownNow()
   }
 
-  def writeMatches(region: String, version: String, millis: Long, matches: Array[RawMatch])(implicit ec: ExecutionContext, tx: TransferManager): Unit = {
+  def writeMatches(
+    bucket: String, region: String, version: String, millis: Long, matches: Array[RawMatch]
+  )(implicit ec: ExecutionContext, tx: TransferManager): Unit = {
     val file = File.createTempFile("totsuki", ".tmp")
     val fs = new FileOutputStream(file)
 
@@ -87,7 +89,7 @@ object Main {
 
     // Here we upload the temp file to S3.
     // TransferManager will automatically make this multipart if it will improve performance.
-    tx.upload("totsuki-fragments",
+    tx.upload(bucket,
               s"${region}/${version}/${millis}.protolist", file).waitForCompletion()
 
     // Now we delete the tempfile since the S3 upload is complete

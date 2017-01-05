@@ -5,7 +5,8 @@ import scopt.OptionParser
 
 case class Config (
   region: String = "NA",
-  bootstrapServers: String = "localhost:9092"
+  bootstrapServers: String = "localhost:9092",
+  bucket: String = "totsuki_fragments"
 )
 
 object Config {
@@ -23,6 +24,11 @@ object Config {
       .text("Kafka bootstrap servers.")
       .valueName("<servers>")
       .action((x, c) => c.copy(bootstrapServers = x))
+
+    opt[String]("bucket")
+      .text("S3 bucket to store fragments.")
+      .valueName("<servers>")
+      .action((x, c) => c.copy(bucket = x))
   }
 
   def mustParse(args: Array[String]): Config = {
