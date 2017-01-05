@@ -2,7 +2,6 @@ package io.asuna.totsuki
 
 import buildinfo.BuildInfo
 import io.asuna.asunasan.ConfigParser
-import scopt.OptionParser
 
 case class TotsukiConfig(
   region: String = "NA",
