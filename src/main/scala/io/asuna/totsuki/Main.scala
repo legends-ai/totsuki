@@ -16,7 +16,7 @@ import scala.util.{ Success, Try }
 object Main {
 
   def main(args: Array[String]): Unit = {
-    val cfg = Config.mustParse(args)
+    val cfg = TotsukiConfigParser.mustParse(args).service
     val conf = new SparkConf().setAppName("totsuki")
 
     val region = cfg.region
