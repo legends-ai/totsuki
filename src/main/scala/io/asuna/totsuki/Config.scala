@@ -6,7 +6,8 @@ import scopt.OptionParser
 case class Config (
   region: String = "NA",
   bootstrapServers: String = "localhost:9092",
-  bucket: String = "totsuki_fragments"
+  bucket: String = "totsuki_fragments",
+  writeInterval: Int = 60
 )
 
 object Config {
@@ -29,6 +30,11 @@ object Config {
       .text("S3 bucket to store fragments.")
       .valueName("<servers>")
       .action((x, c) => c.copy(bucket = x))
+
+    opt[Int]("write_interval")
+      .text("Interval to flush matches to S3.")
+      .valueName("<seconds>")
+      .action((x, c) => c.copy(writeInterval = x))
   }
 
   def mustParse(args: Array[String]): Config = {

@@ -27,7 +27,7 @@ object Main {
     println(s"Initializing Totsuki on topic ${topic}")
 
     // Write every 60 seconds. TODO(igm): make this configurable
-    val ssc = new StreamingContext(conf, Seconds(60))
+    val ssc = new StreamingContext(conf, Seconds(cfg.writeInterval))
 
     // hostname:port for Kafka brokers, not Zookeeper
     val kafkaParams = Map(
