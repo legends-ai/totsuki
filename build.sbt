@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-kafka-0-10" % "2.0.2",
 
   // Asuna standard lib
-  "io.asuna" %% "asunasan" % "0.7.4",
+  "io.asuna" %% "asunasan" % "0.8.9",
 
   // Scalatest
   "org.scalactic" %% "scalactic" % "3.0.0" % "test",
