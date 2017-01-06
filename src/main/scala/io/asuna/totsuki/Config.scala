@@ -4,7 +4,7 @@ import buildinfo.BuildInfo
 import io.asuna.asunasan.ConfigParser
 
 case class TotsukiConfig(
-  bucket: String = "totsuki_fragments",
+  bucket: String = "totsuki-fragments-dev",
   writeInterval: Int = 60
 )
 
