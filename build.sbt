@@ -16,10 +16,6 @@ libraryDependencies ++= Seq(
 
 mainClass in assembly := Some("io.asuna.totsuki.Main")
 
-assemblyShadeRules in assembly := Seq(
-  ShadeRule.rename("com.google.protobuf.**" -> "protobuf-shaded.@1").inAll
-)
-
 assemblyMergeStrategy in assembly := {
   case x if x.endsWith("io.netty.versions.properties") => MergeStrategy.first
   case x if x contains "log4j" => MergeStrategy.first
