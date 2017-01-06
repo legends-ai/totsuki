@@ -57,11 +57,9 @@ dockerfile in docker := {
   val artifactTargetPath = s"/app/${artifact.name}"
 
   new Dockerfile {
-    from("gettyimages/spark:2.0.2-hadoop-2.7")
+    from("java")
     add(artifact, artifactTargetPath)
-    entryPoint("spark-submit",
-               "--class", "ai.legends.totsuki.Main",
-               "--master", "local[4]", artifactTargetPath)
+    entryPoint("java", "-jar", artifactTargetPath)
   }
 }
 
