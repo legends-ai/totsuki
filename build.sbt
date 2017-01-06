@@ -6,7 +6,7 @@ scalaVersion in ThisBuild := "2.11.8"
 
 libraryDependencies ++= Seq(
   "io.monix" %% "monix" % "2.1.2",
-  "io.asuna" %% "asunasan" % "0.9.0",
+  "io.asuna" %% "asunasan" % "0.9.2",
 
   // Scalatest
   "org.scalactic" %% "scalactic" % "3.0.0" % "test",
