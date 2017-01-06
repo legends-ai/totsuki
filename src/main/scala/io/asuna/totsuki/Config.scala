@@ -4,7 +4,6 @@ import buildinfo.BuildInfo
 import io.asuna.asunasan.ConfigParser
 
 case class TotsukiConfig(
-  region: String = "NA",
   bootstrapServers: String = "localhost:9092",
   bucket: String = "totsuki_fragments",
   writeInterval: Int = 60
@@ -17,11 +16,6 @@ object TotsukiConfigParser extends ConfigParser[TotsukiConfig](
   healthPort = 21216,
   initial = TotsukiConfig()
 ) {
-
-  opt[String]("region")
-    .text("The region we're reading matches from. Note: this is not the S3 region. Defaults to `na`.")
-    .valueName("<na|euw|eune|...>")
-    .action((x, c) => c.copy(service = c.service.copy(region = x)))
 
   opt[String]("bootstrap_servers")
     .text("Kafka bootstrap servers.")
