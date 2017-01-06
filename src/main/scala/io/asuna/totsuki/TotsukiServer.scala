@@ -58,7 +58,7 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
   def writeBucketMatches(region: Region, version: String, matches: Seq[RawMatch]): Unit = {
     // First, we generate a unique id to distinguish this bucket write.
     // We will also provide a timestamp to make it easy to know what the latest write was.
-    val id = s"$${System.currentTimeMillis}_{UUID.randomUUID()}"
+    val id = s"${System.currentTimeMillis}_${UUID.randomUUID()}"
 
     val rgName = region.name.toLowerCase()
 
