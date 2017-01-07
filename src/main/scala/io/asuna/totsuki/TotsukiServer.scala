@@ -52,6 +52,7 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
     }
 
   override def write(rawMatch: RawMatch): Future[Empty] = endpoint {
+    println(s"Received match ${rawMatch.id}")
     stream.onNext(rawMatch).map(_ => Empty.defaultInstance)
   }
 
