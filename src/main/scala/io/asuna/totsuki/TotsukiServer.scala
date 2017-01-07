@@ -4,9 +4,10 @@ import cats.implicits._
 import com.amazonaws.services.s3.transfer.TransferManager
 import com.google.protobuf.empty.Empty
 import io.asuna.proto.enums.Region
+import io.asuna.proto.ids.MatchId
 import java.io.{ File, FileOutputStream }
 import java.util.UUID
-import monix.execution.Scheduler
+import monix.execution.{ Ack, Scheduler }
 import scala.concurrent.duration._
 import io.asuna.asunasan.BaseService
 import io.asuna.proto.bacchus.BacchusData.RawMatch
@@ -21,6 +22,8 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
   val tx = new TransferManager()
 
   val stream = PublishToOneSubject[RawMatch]()
+
+  val db = TotsukiDatabase.fromConfig(config)
 
   // Create the RawMatch processor.
   stream
@@ -45,7 +48,7 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
       val (region, version) = obs.key
       obs
         .bufferTimed(config.service.writeInterval.seconds)
-        .foreach(writeBucketMatches(region, version, _))
+        .subscribe(writeBucketMatches(region, version, _))
     }
 
   override def write(rawMatch: RawMatch): Future[Empty] = endpoint {
@@ -55,7 +58,7 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
   /**
     *  Writes matches of a specific region/version combination.
     */
-  def writeBucketMatches(region: Region, version: String, matches: Seq[RawMatch]): Unit = {
+  def writeBucketMatches(region: Region, version: String, matches: Seq[RawMatch]): Future[Ack] = {
     // First, we generate a unique id to distinguish this bucket write.
     // We will also provide a timestamp to make it easy to know what the latest write was.
     val id = s"${System.currentTimeMillis}_${UUID.randomUUID()}"
@@ -79,6 +82,17 @@ class TotsukiServer(args: Seq[String])(implicit scheduler: Scheduler)
 
     // Now we delete the tempfile since the S3 upload is complete.
     file.delete()
+
+    // Add all of the match ids to cassandra.
+    matches.map { m =>
+      m.id.map { id =>
+        // Add id to DB and return it if successful
+        db.matchSet.add(id).map(_ => id)
+      }
+    }.collect {
+      // Unwrap futures
+      case Some(fut) => fut
+    }.toList.sequence.map(_ => Ack.Continue)
   }
 
 }
